@@ -22,5 +22,6 @@ public class Book {
     private Integer year;
 
     @ManyToOne
+    @JoinColumn(name = "shelf_id")
     private Shelf shelf;
 }

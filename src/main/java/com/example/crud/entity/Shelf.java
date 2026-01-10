@@ -11,12 +11,11 @@ public class Shelf {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private int shelf_id;
 
     private String name;
     private String description;
 
     @OneToMany(mappedBy = "shelf")
-    @JoinColumn(name = "id")
     List<Book> books;
 }
