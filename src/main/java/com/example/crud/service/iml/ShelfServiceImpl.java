@@ -1,8 +1,11 @@
 package com.example.crud.service.iml;
 
+import com.example.crud.entity.Book;
 import com.example.crud.entity.Shelf;
+import com.example.crud.repository.BookRepository;
 import com.example.crud.repository.ShelfRepository;
 import com.example.crud.service.ShelfService;
+import lombok.RequiredArgsConstructor;
 import org.aspectj.apache.bcel.generic.RET;
 import org.springframework.stereotype.Service;
 
@@ -10,24 +13,31 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ShelfServiceImpl implements ShelfService {
-    private ShelfRepository repository;
+
+    private ShelfRepository shelfRepository;
+    private BookRepository bookRepository;
+
+    public ShelfServiceImpl(ShelfRepository shelfRepository) {
+        this.shelfRepository = shelfRepository;
+    }
 
     @Override
     public Shelf createShelf(Shelf shelf) {
-        return repository.save(shelf);
+        return shelfRepository.save(shelf);
     }
 
     @Override
     public String readShelf() {
-        List<Shelf> shelfs = repository.findAll();
+        List<Shelf> shelfs = shelfRepository.findAll();
 
         return shelfs.stream().map(Shelf::toString).collect(Collectors.joining("\n"));
     }
 
     @Override
     public Shelf updateShelf(Integer id, Shelf shelf) {
-        Shelf existingShelf = repository.findById(id)
+        Shelf existingShelf = shelfRepository.findById(id)
                 .orElse(null);
 
         if (existingShelf != null) {
@@ -35,7 +45,7 @@ public class ShelfServiceImpl implements ShelfService {
             existingShelf.setName(shelf.getName());
             existingShelf.setDescription(shelf.getDescription());
 
-            return repository.save(existingShelf);
+            return shelfRepository.save(existingShelf);
         }
 
         System.out.println("Полка не найдена");
@@ -44,13 +54,76 @@ public class ShelfServiceImpl implements ShelfService {
 
     @Override
     public String deleteShelf(Integer id) {
-        if (repository.existsById(id)) {
+        if (!shelfRepository.existsById(id)) {
             return "Полка не найдена";
         }
 
-        String name  = repository.findById(id).get().getName();
-        repository.deleteById(id);
+        String name  = shelfRepository.findById(id).get().getName();
+        shelfRepository.deleteById(id);
 
         return "Полка " + name + " удалена";
+    }
+
+    @Override
+    public List<Book> getBooksForShelf(Integer id) {
+        Shelf existingShelf = shelfRepository.findById(id)
+                .orElse(null);
+
+        if (existingShelf != null) {
+            return existingShelf.getBooks();
+        }
+
+        System.out.println("Книга не найдена");
+        return null;
+    }
+
+    @Override
+    public String removeBookFromShelfByBookId(Integer bookId) {
+
+        Book book = bookRepository.findById(bookId)
+                .orElse(null);
+
+        if (book == null) {
+            return "Книга не найдена";
+        }
+
+        if (book.getShelf() == null) {
+            return "Книга " + book.getTitle() + " не находится ни на одной полке";
+        }
+
+        Shelf shelf = book.getShelf();
+        String shelfName = shelf.getName();
+        String bookName = book.getTitle();
+
+        book.setShelf(null);
+        bookRepository.save(book);
+
+        return "Книга '" + bookName + "' удалена с полки '" + shelfName + "'";
+    }
+
+    @Override
+    public String addBookToShelf(Integer shelfId, Integer bookId) {
+        Shelf shelf = shelfRepository.findById(shelfId)
+                .orElse(null);
+
+        if (shelf == null) {
+            return "Полка не найдена";
+        }
+
+        Book book = bookRepository.findById(bookId)
+                .orElse(null);
+
+        if (book == null) {
+            return "Книга не найдена";
+        }
+
+        if (book.getShelf() != null) {
+            return "Книга " + book.getTitle() + " уже находится на полке " + book.getShelf().getName();
+        }
+
+        book.setShelf(shelf);
+        bookRepository.save(book);
+
+        return "Книга '" + book.getTitle() + "' добавлена на полку '" + shelf.getName() + "'";
     }
 }

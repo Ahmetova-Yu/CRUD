@@ -14,4 +14,10 @@ public interface ShelfService {
     Shelf updateShelf(Integer id, Shelf shelf);
 
     String deleteShelf(Integer id);
+
+    List<Book> getBooksForShelf(Integer id);
+
+    String removeBookFromShelfByBookId(Integer bookId);
+
+    String addBookToShelf(Integer shelfId, Integer bookId);
 }
