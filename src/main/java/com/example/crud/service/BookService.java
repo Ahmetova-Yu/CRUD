@@ -1,5 +1,7 @@
 package com.example.crud.service;
 
+import com.example.crud.dto.BookRequest;
+import com.example.crud.dto.BookWithShelfDTO;
 import com.example.crud.entity.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,4 +34,7 @@ public interface BookService {
     List<Book> findAllSortedByAuthor();
 
     List<Book> findAllSortedByYear();
+
+    Book getBookById(Integer id); // Новый метод
+    BookWithShelfDTO getBookWithShelf(Integer id);
 }

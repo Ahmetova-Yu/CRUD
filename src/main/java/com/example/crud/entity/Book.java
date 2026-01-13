@@ -1,15 +1,17 @@
 package com.example.crud.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(name = "book")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-@EqualsAndHashCode
+@ToString(exclude = "shelf")
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -19,7 +21,8 @@ public class Book {
     private String author;
     private Integer year;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shelf_id", nullable = true)
+    @JsonIgnoreProperties({"books", "hibernateLazyInitializer", "handler", "id"})
     private Shelf shelf;
 }

@@ -1,7 +1,11 @@
 package com.example.crud.service.iml;
 
+import com.example.crud.dto.BookRequest;
+import com.example.crud.dto.BookWithShelfDTO;
 import com.example.crud.entity.Book;
+import com.example.crud.entity.Shelf;
 import com.example.crud.repository.BookRepository;
+import com.example.crud.repository.ShelfRepository;
 import com.example.crud.service.BookService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
@@ -9,10 +13,12 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.jpa.repository.query.QueryUtils.applySorting;
@@ -20,14 +26,69 @@ import static org.springframework.data.jpa.repository.query.QueryUtils.applySort
 @Service
 public class BookServiceImpl implements BookService {
     private BookRepository repository;
+    private ShelfRepository shelfRepository;
 
-    public BookServiceImpl(BookRepository repository) {
+    public BookServiceImpl(BookRepository repository, ShelfRepository shelfRepository) {
         this.repository = repository;
+        this.shelfRepository = shelfRepository;
+    }
+
+//    @Override
+//    public Book createBook(Book book) {
+//        return repository.save(book);
+//    }
+
+    @Override
+    @Transactional
+    public Book createBook(Book book) {
+        if (book.getShelf() != null) {
+            Integer shelfId = book.getShelf().getId();
+
+            Optional<Shelf> shelfOpt = shelfRepository.findById(shelfId);
+
+            if (shelfOpt.isPresent()) {
+                book.setShelf(shelfOpt.get());
+                System.out.println("Книга привязана к полке ID: " + shelfId);
+            } else {
+                // НЕ НАЙДЕНО: обнуляем полку
+                System.out.println("ВНИМАНИЕ: Полка с ID " + shelfId + " не найдена!");
+                book.setShelf(null);
+            }
+        } else {
+            System.out.println("ноль");
+        }
+
+        return repository.save(book);
     }
 
     @Override
-    public Book createBook(Book book) {
-        return repository.save(book);
+    public Book getBookById(Integer id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+    }
+
+    @Override
+    public BookWithShelfDTO getBookWithShelf(Integer id) {
+        Book book = getBookById(id);
+        return convertToBookWithShelfDTO(book);
+    }
+
+    private BookWithShelfDTO convertToBookWithShelfDTO(Book book) {
+        BookWithShelfDTO dto = new BookWithShelfDTO();
+        dto.setId(book.getId());
+        dto.setTitle(book.getTitle());
+        dto.setAuthor(book.getAuthor());
+        dto.setYear(book.getYear());
+
+        if (book.getShelf() != null) {
+            BookWithShelfDTO.ShelfSimpleDTO shelfDTO = new BookWithShelfDTO.ShelfSimpleDTO();
+            shelfDTO.setId(book.getShelf().getId());
+            shelfDTO.setName(book.getShelf().getName());
+            shelfDTO.setDescription(book.getShelf().getDescription());
+            dto.setShelf(shelfDTO);
+        }
+
+        return dto;
     }
 
     @Override
