@@ -1,7 +1,5 @@
 package com.example.crud.controller;
 
-import com.example.crud.dto.BookRequest;
-import com.example.crud.dto.BookResponse;
 import com.example.crud.dto.BookWithShelfDTO;
 import com.example.crud.entity.Book;
 import com.example.crud.service.BookService;
@@ -15,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/book")
@@ -47,27 +44,6 @@ public class BookController {
         String deleteBook = serviceBook.deleteBook(id);
         return new ResponseEntity<>(deleteBook, HttpStatus.OK);
     }
-
-//    @GetMapping
-//    public ResponseEntity<List<BookResponse>> getAllBooks(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size,
-//            @RequestParam(defaultValue = "title") String sortBy,
-//            @RequestParam(defaultValue = "asc") String direction) {
-//
-//        Sort sort = direction.equalsIgnoreCase("desc")
-//                ? Sort.by(sortBy).descending()
-//                : Sort.by(sortBy).ascending();
-//
-//        Pageable pageable = PageRequest.of(page, size, sort);
-//        Page<Book> booksPage = serviceBook.getAllBooks(pageable);
-//
-//        List<BookResponse> response = booksPage.getContent().stream()
-//                .map(this::convertToResponse)
-//                .collect(Collectors.toList());
-//
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
 
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooks(

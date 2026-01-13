@@ -1,6 +1,5 @@
 package com.example.crud.service.iml;
 
-import com.example.crud.dto.BookRequest;
 import com.example.crud.dto.BookWithShelfDTO;
 import com.example.crud.entity.Book;
 import com.example.crud.entity.Shelf;
@@ -21,8 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.springframework.data.jpa.repository.query.QueryUtils.applySorting;
-
 @Service
 public class BookServiceImpl implements BookService {
     private BookRepository repository;
@@ -32,11 +29,6 @@ public class BookServiceImpl implements BookService {
         this.repository = repository;
         this.shelfRepository = shelfRepository;
     }
-
-//    @Override
-//    public Book createBook(Book book) {
-//        return repository.save(book);
-//    }
 
     @Override
     @Transactional
@@ -49,8 +41,8 @@ public class BookServiceImpl implements BookService {
             if (shelfOpt.isPresent()) {
                 book.setShelf(shelfOpt.get());
                 System.out.println("Книга привязана к полке ID: " + shelfId);
+
             } else {
-                // НЕ НАЙДЕНО: обнуляем полку
                 System.out.println("ВНИМАНИЕ: Полка с ID " + shelfId + " не найдена!");
                 book.setShelf(null);
             }

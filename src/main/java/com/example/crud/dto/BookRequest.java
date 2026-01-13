@@ -7,5 +7,5 @@ public class BookRequest {
     private String title;
     private String author;
     private Integer year;
-    private Integer shelfId;  // Только ID полки
+    private Integer shelfId;
 }
