@@ -133,7 +133,6 @@ public class BookServiceImpl implements BookService {
         return repository.findAll(pageable);
     }
 
-    // возвращать Book
     @Override
     public Page<Book> searchBooks(String keyword, Pageable pageable) {
         List<Book> allBooks = repository.findAll();
@@ -182,35 +181,34 @@ public class BookServiceImpl implements BookService {
         return createPageFromList(filteredBooks, pageable);
     }
 
-
-    // перенести в репозиторий
     @Override
-    public List<Book> findAllSortedByTitle() {
-//        List<Book> allBooks = repository.findAll();
-//
-//        return allBooks.stream()
-//                .sorted(Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER))
-//                .collect(Collectors.toList());
-
-        return repository.findAllByOrderByTitleAsc();
+    public List<Book> findAllSortedByTitleAsc() {
+        return repository.findAllSortedByTitleAsc();
     }
 
     @Override
-    public List<Book> findAllSortedByAuthor() {
-        List<Book> allBooks = repository.findAll();
-
-        return allBooks.stream()
-                .sorted(Comparator.comparing(Book::getAuthor, String.CASE_INSENSITIVE_ORDER))
-                .collect(Collectors.toList());
+    public List<Book> findAllSortedByTitleDesc() {
+        return repository.findAllSortedByTitleDesc();
     }
 
     @Override
-    public List<Book> findAllSortedByYear() {
-        List<Book> allBooks = repository.findAll();
+    public List<Book> findAllSortedByAuthorAsc() {
+        return repository.findAllSortedByAuthorAsc();
+    }
 
-        return allBooks.stream()
-                .sorted(Comparator.comparing(Book::getYear))
-                .collect(Collectors.toList());
+    @Override
+    public List<Book> findAllSortedByAuthorDesc() {
+        return repository.findAllSortedByAuthorDesc();
+    }
+
+    @Override
+    public List<Book> findAllSortedByYearAsc() {
+        return repository.findAllSortedByYearAsc();
+    }
+
+    @Override
+    public List<Book> findAllSortedByYearDesc() {
+        return repository.findAllSortedByYearDesc();
     }
 
     private Page<Book> createPageFromList(List<Book> list, Pageable pageable) {

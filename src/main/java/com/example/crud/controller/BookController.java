@@ -87,27 +87,9 @@ public class BookController {
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
-//    private BookResponse convertToResponse(Book book) {
-//        BookResponse response = new BookResponse();
-//        response.setId(book.getId());
-//        response.setTitle(book.getTitle());
-//        response.setAuthor(book.getAuthor());
-//        response.setYear(book.getYear());
-//
-//        if (book.getShelf() != null) {
-//            BookResponse.ShelfSimpleResponse shelf = new BookResponse.ShelfSimpleResponse();
-//            shelf.setId(book.getShelf().getId());
-//            shelf.setName(book.getShelf().getName());
-//            shelf.setDescription(book.getShelf().getDescription());
-//            response.setShelf(shelf);
-//        }
-//
-//        return response;
-//    }
-
     @GetMapping("/{id}/with-shelf")
     public ResponseEntity<BookWithShelfDTO> getBookWithShelf(@PathVariable Integer id) {
-        Book book = serviceBook.getBookById(id); // Нужно добавить этот метод в сервис
+        Book book = serviceBook.getBookById(id);
         BookWithShelfDTO dto = convertToBookWithShelfDTO(book);
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
@@ -187,21 +169,39 @@ public class BookController {
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
-    @GetMapping("/sorted/title")
-    public ResponseEntity<List<Book>> findAllSortedByTitle() {
-        List<Book> books = serviceBook.findAllSortedByTitle();
+    @GetMapping("/sorted/title/asc")
+    public ResponseEntity<List<Book>> findAllSortedByTitleAsc() {
+        List<Book> books = serviceBook.findAllSortedByTitleAsc();
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
-    @GetMapping("/sorted/author")
-    public ResponseEntity<List<Book>> findAllSortedByAuthor() {
-        List<Book> books = serviceBook.findAllSortedByAuthor();
+    @GetMapping("/sorted/title/desc")
+    public ResponseEntity<List<Book>> findAllSortedByTitleDesc() {
+        List<Book> books = serviceBook.findAllSortedByTitleDesc();
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
-    @GetMapping("/sorted/year")
-    public ResponseEntity<List<Book>> findAllSortedByYear() {
-        List<Book> books = serviceBook.findAllSortedByYear();
+    @GetMapping("/sorted/author/asc")
+    public ResponseEntity<List<Book>> findAllSortedByAuthorAsc() {
+        List<Book> books = serviceBook.findAllSortedByAuthorAsc();
+        return new ResponseEntity<>(books, HttpStatus.OK);
+    }
+
+    @GetMapping("/sorted/author/desc")
+    public ResponseEntity<List<Book>> findAllSortedByAuthorDesc() {
+        List<Book> books = serviceBook.findAllSortedByAuthorDesc();
+        return new ResponseEntity<>(books, HttpStatus.OK);
+    }
+
+    @GetMapping("/sorted/year/asc")
+    public ResponseEntity<List<Book>> findAllSortedByYearAsc() {
+        List<Book> books = serviceBook.findAllSortedByYearAsc();
+        return new ResponseEntity<>(books, HttpStatus.OK);
+    }
+
+    @GetMapping("/sorted/year/desc")
+    public ResponseEntity<List<Book>> findAllSortedByYearDesc() {
+        List<Book> books = serviceBook.findAllSortedByYearDesc();
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 }

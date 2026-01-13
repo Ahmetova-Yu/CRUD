@@ -29,12 +29,19 @@ public interface BookService {
 
     Page<Book> findByTitleAndAuthor(String title, String author, Pageable pageable);
 
-    List<Book> findAllSortedByTitle();
+    List<Book> findAllSortedByTitleAsc();
 
-    List<Book> findAllSortedByAuthor();
+    List<Book> findAllSortedByTitleDesc();
 
-    List<Book> findAllSortedByYear();
+    List<Book> findAllSortedByAuthorAsc();
 
-    Book getBookById(Integer id); // Новый метод
+    List<Book> findAllSortedByAuthorDesc();
+
+    List<Book> findAllSortedByYearAsc();
+
+    List<Book> findAllSortedByYearDesc();
+
+    Book getBookById(Integer id);
+
     BookWithShelfDTO getBookWithShelf(Integer id);
 }
