@@ -4,14 +4,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-//@AllArgsConstructor
-//@NoArgsConstructor
-//@Getter
-//@Setter
-//@ToString
-//@EqualsAndHashCode
-@Data
-//@RequiredArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+@EqualsAndHashCode
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -21,7 +19,7 @@ public class Book {
     private String author;
     private Integer year;
 
-    @ManyToOne
-    @JoinColumn(name = "shelf_id")
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "shelf_id", nullable = true)
     private Shelf shelf;
 }

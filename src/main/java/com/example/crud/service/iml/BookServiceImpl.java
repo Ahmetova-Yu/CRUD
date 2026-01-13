@@ -74,6 +74,7 @@ public class BookServiceImpl implements BookService {
         return repository.findAll(pageable);
     }
 
+    // возвращать Book
     @Override
     public Page<Book> searchBooks(String keyword, Pageable pageable) {
         List<Book> allBooks = repository.findAll();
@@ -122,13 +123,17 @@ public class BookServiceImpl implements BookService {
         return createPageFromList(filteredBooks, pageable);
     }
 
+
+    // перенести в репозиторий
     @Override
     public List<Book> findAllSortedByTitle() {
-        List<Book> allBooks = repository.findAll();
+//        List<Book> allBooks = repository.findAll();
+//
+//        return allBooks.stream()
+//                .sorted(Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER))
+//                .collect(Collectors.toList());
 
-        return allBooks.stream()
-                .sorted(Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER))
-                .collect(Collectors.toList());
+        return repository.findAllByOrderByTitleAsc();
     }
 
     @Override

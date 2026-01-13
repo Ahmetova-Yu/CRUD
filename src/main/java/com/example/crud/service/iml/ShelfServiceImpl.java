@@ -7,21 +7,25 @@ import com.example.crud.repository.ShelfRepository;
 import com.example.crud.service.ShelfService;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.apache.bcel.generic.RET;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ShelfServiceImpl implements ShelfService {
 
     private ShelfRepository shelfRepository;
     private BookRepository bookRepository;
 
-    public ShelfServiceImpl(ShelfRepository shelfRepository) {
+    @Autowired
+    public ShelfServiceImpl(ShelfRepository shelfRepository, BookRepository bookRepository) {
         this.shelfRepository = shelfRepository;
+        this.bookRepository = bookRepository;
     }
+
+    public ShelfServiceImpl() {}
 
     @Override
     public Shelf createShelf(Shelf shelf) {
