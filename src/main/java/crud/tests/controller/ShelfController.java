@@ -1,14 +1,9 @@
-package com.example.crud.controller;
+package crud.tests.controller;
 
-import com.example.crud.entity.Book;
-import com.example.crud.entity.Shelf;
-import com.example.crud.service.ShelfService;
-import lombok.RequiredArgsConstructor;
+import crud.tests.entity.Book;
+import crud.tests.entity.Shelf;
+import crud.tests.service.ShelfService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

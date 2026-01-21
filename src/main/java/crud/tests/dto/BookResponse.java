@@ -1,17 +1,17 @@
-package com.example.crud.dto;
+package crud.tests.dto;
 
 import lombok.Data;
 
 @Data
-public class BookWithShelfDTO {
+public class BookResponse {
     private Integer id;
     private String title;
     private String author;
     private Integer year;
-    private ShelfSimpleDTO shelf;
+    private ShelfSimpleResponse shelf;
 
     @Data
-    public static class ShelfSimpleDTO {
+    public static class ShelfSimpleResponse {
         private Integer id;
         private String name;
         private String description;

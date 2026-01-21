@@ -1,4 +1,4 @@
-package com.example.crud.entity;
+package crud.tests.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;

@@ -1,4 +1,4 @@
-package com.example.crud.entity;
+package crud.tests.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

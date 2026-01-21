@@ -1,9 +1,7 @@
-package com.example.crud.service;
+package crud.tests.service;
 
-import com.example.crud.entity.Book;
-import com.example.crud.entity.Shelf;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import crud.tests.entity.Book;
+import crud.tests.entity.Shelf;
 
 import java.util.List;
 
