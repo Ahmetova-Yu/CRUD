@@ -8,7 +8,7 @@ public class BookResponse {
     private String title;
     private String author;
     private Integer year;
-    private ShelfSimpleResponse shelf;
+    private ShelfSimpleResponse shelf; // Только нужные поля
 
     @Data
     public static class ShelfSimpleResponse {

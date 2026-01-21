@@ -5,10 +5,15 @@ import com.example.crud.entity.Shelf;
 import com.example.crud.repository.BookRepository;
 import com.example.crud.repository.ShelfRepository;
 import com.example.crud.service.ShelfService;
+import lombok.RequiredArgsConstructor;
+import org.aspectj.apache.bcel.generic.RET;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ShelfServiceImpl implements ShelfService {
@@ -34,6 +39,7 @@ public class ShelfServiceImpl implements ShelfService {
         List<Shelf> shelves = shelfRepository.findAll();
 
         return shelves;
+        //return shelfs.stream().map(Shelf::toString).collect(Collectors.joining("\n"));
     }
 
     @Override
