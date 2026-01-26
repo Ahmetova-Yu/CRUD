@@ -1,11 +1,11 @@
-package crud.tests.service.iml;
+package com.example.crud.service.iml;
 
-import crud.tests.dto.BookWithShelfDTO;
-import crud.tests.entity.Book;
-import crud.tests.entity.Shelf;
-import crud.tests.repository.BookRepository;
-import crud.tests.repository.ShelfRepository;
-import crud.tests.service.BookService;
+import com.example.crud.dto.BookWithShelfDTO;
+import com.example.crud.entity.Book;
+import com.example.crud.entity.Shelf;
+import com.example.crud.repository.BookRepository;
+import com.example.crud.repository.ShelfRepository;
+import com.example.crud.service.BookService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;

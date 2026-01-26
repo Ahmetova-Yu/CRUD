@@ -1,8 +1,8 @@
-package crud.tests.controller;
+package com.example.crud.controller;
 
-import crud.tests.entity.Book;
-import crud.tests.entity.Shelf;
-import crud.tests.service.ShelfService;
+import com.example.crud.entity.Book;
+import com.example.crud.entity.Shelf;
+import com.example.crud.service.ShelfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

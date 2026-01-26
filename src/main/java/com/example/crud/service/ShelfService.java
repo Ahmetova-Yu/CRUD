@@ -1,7 +1,7 @@
-package crud.tests.service;
+package com.example.crud.service;
 
-import crud.tests.entity.Book;
-import crud.tests.entity.Shelf;
+import com.example.crud.entity.Book;
+import com.example.crud.entity.Shelf;
 
 import java.util.List;
 

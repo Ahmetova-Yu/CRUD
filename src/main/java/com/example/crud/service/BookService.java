@@ -1,7 +1,7 @@
-package crud.tests.service;
+package com.example.crud.service;
 
-import crud.tests.dto.BookWithShelfDTO;
-import crud.tests.entity.Book;
+import com.example.crud.dto.BookWithShelfDTO;
+import com.example.crud.entity.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

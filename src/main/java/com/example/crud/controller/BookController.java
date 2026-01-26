@@ -1,8 +1,8 @@
-package crud.tests.controller;
+package com.example.crud.controller;
 
-import crud.tests.dto.BookWithShelfDTO;
-import crud.tests.entity.Book;
-import crud.tests.service.BookService;
+import com.example.crud.dto.BookWithShelfDTO;
+import com.example.crud.entity.Book;
+import com.example.crud.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
