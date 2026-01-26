@@ -3,58 +3,60 @@ package com.example.crud.service.iml;
 import com.example.crud.dto.BookWithShelfDTO;
 import com.example.crud.entity.Book;
 import com.example.crud.entity.Shelf;
+import com.example.crud.exception.BookNotFoundException;
+import com.example.crud.exception.ShelfNotFoundException;
+import com.example.crud.exception.InvalidRequestException;
 import com.example.crud.repository.BookRepository;
 import com.example.crud.repository.ShelfRepository;
 import com.example.crud.service.BookService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class BookServiceImpl implements BookService {
-    private BookRepository repository;
-    private ShelfRepository shelfRepository;
+    private final BookRepository bookRepository;
+    private final ShelfRepository shelfRepository;
 
-    public BookServiceImpl(BookRepository repository, ShelfRepository shelfRepository) {
-        this.repository = repository;
+    public BookServiceImpl(BookRepository bookRepository, ShelfRepository shelfRepository) {
+        this.bookRepository = bookRepository;
         this.shelfRepository = shelfRepository;
     }
 
     @Override
     @Transactional
     public Book createBook(Book book) {
+        validateBookForCreation(book);
+
         if (book.getShelf() != null) {
             Integer shelfId = book.getShelf().getId();
 
-            Optional<Shelf> shelfOpt = shelfRepository.findById(shelfId);
+            Shelf shelf = shelfRepository.findById(shelfId)
+                    .orElseThrow(() -> new ShelfNotFoundException("Полка с ID " + shelfId + " не найдена"));
 
-            if (shelfOpt.isPresent()) {
-                book.setShelf(shelfOpt.get());
-                System.out.println("Книга привязана к полке ID: " + shelfId);
-            } else {
-                // НЕ НАЙДЕНО: обнуляем полку
-                System.out.println("ВНИМАНИЕ: Полка с ID " + shelfId + " не найдена!");
-                book.setShelf(null);
-            }
+            book.setShelf(shelf);
+            log.info("Книга '{}' привязана к полке ID: {}", book.getTitle(), shelfId);
+        } else {
+            book.setShelf(null);
         }
 
-        return repository.save(book);
+        return bookRepository.save(book);
     }
 
     @Override
     public Book getBookById(Integer id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("Книга с ID " + id + " не найдена"));
     }
 
     @Override
@@ -83,56 +85,65 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public String readBook() {
-        List<Book> books = repository.findAll();
+        List<Book> books = bookRepository.findAll();
 
-        return books.stream().map(Book::toString).collect(Collectors.joining("\n"));
+        if (books.isEmpty()) {
+            return "Библиотека пуста";
+        }
+
+        return books.stream()
+                .map(Book::toString)
+                .collect(Collectors.joining("\n"));
     }
 
     @Override
+    @Transactional
     public Book updateBook(Integer id, Book book) {
-        Book existingBook = repository.findById(id)
-                .orElse(null);
+        validateBookForUpdate(book);
 
+        Book existingBook = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("Книга с ID " + id + " не найдена"));
 
-        if (existingBook != null) {
+        existingBook.setTitle(book.getTitle());
+        existingBook.setAuthor(book.getAuthor());
+        existingBook.setYear(book.getYear());
 
-            existingBook.setTitle(book.getTitle());
-            existingBook.setAuthor(book.getAuthor());
-            existingBook.setYear(book.getYear());
-            existingBook.setShelf(book.getShelf());
-
-            return repository.save(existingBook);
+        if (book.getShelf() != null) {
+            Shelf shelf = shelfRepository.findById(book.getShelf().getId())
+                    .orElseThrow(() -> new ShelfNotFoundException("Полка с ID " + book.getShelf().getId() + " не найдена"));
+            existingBook.setShelf(shelf);
+        } else {
+            existingBook.setShelf(null);
         }
 
-        System.out.println("Книга не найдена");
-        return null;
+        return bookRepository.save(existingBook);
     }
 
     @Override
-    public String deleteBook(Integer id) {
-        if (!repository.existsById(id)) {
-            return "Книга не найдена";
-        }
+    @Transactional
+    public void deleteBook(Integer id) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("Книга с ID " + id + " не найдена"));
 
-        String name  = repository.findById(id).get().getTitle();
-
-        repository.deleteById(id);
-        return "Книга " + name + " удалена";
+        String bookTitle = book.getTitle();
+        bookRepository.delete(book);
+        log.info("Книга '{}' (ID: {}) удалена", bookTitle, id);
     }
 
     @Override
     public Page<Book> getAllBooks(Pageable pageable) {
-        return repository.findAll(pageable);
+        return bookRepository.findAll(pageable);
     }
 
     @Override
     public Page<Book> searchBooks(String keyword, Pageable pageable) {
-        List<Book> allBooks = repository.findAll();
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new InvalidRequestException("Ключевое слово для поиска не может быть пустым");
+        }
 
-        List<Book> filteredBooks = allBooks.stream()
-                .filter(book ->
-                        book.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
-                                book.getAuthor().toLowerCase().contains(keyword.toLowerCase()))
+        List<Book> filteredBooks = bookRepository.findAll().stream()
+                .filter(book -> book.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+                        book.getAuthor().toLowerCase().contains(keyword.toLowerCase()))
                 .collect(Collectors.toList());
 
         return createPageFromList(filteredBooks, pageable);
@@ -140,34 +151,56 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Page<Book> findByAuthor(String author, Pageable pageable) {
-        List<Book> allBooks = repository.findAll();
+        if (author == null || author.trim().isEmpty()) {
+            throw new InvalidRequestException("Имя автора не может быть пустым");
+        }
 
-        List<Book> filteredBooks = allBooks.stream()
+        List<Book> filteredBooks = bookRepository.findAll().stream()
                 .filter(book -> book.getAuthor().toLowerCase().contains(author.toLowerCase()))
                 .collect(Collectors.toList());
+
+        if (filteredBooks.isEmpty()) {
+            log.warn("Книги автора '{}' не найдены", author);
+        }
 
         return createPageFromList(filteredBooks, pageable);
     }
 
     @Override
     public Page<Book> findByYear(Integer year, Pageable pageable) {
-        List<Book> allBooks = repository.findAll();
+        if (year == null) {
+            throw new InvalidRequestException("Год не может быть null");
+        }
 
-        List<Book> filteredBooks = allBooks.stream()
-                .filter(book -> book.getYear().equals(year))
+        if (year < 0 || year > 2100) {
+            throw new InvalidRequestException("Год должен быть в диапазоне от 0 до 2100");
+        }
+
+        List<Book> filteredBooks = bookRepository.findAll().stream()
+                .filter(book -> year.equals(book.getYear()))
                 .collect(Collectors.toList());
+
+        if (filteredBooks.isEmpty()) {
+            log.info("Книги за {} год не найдены", year);
+        }
 
         return createPageFromList(filteredBooks, pageable);
     }
 
     @Override
     public Page<Book> findByTitleAndAuthor(String title, String author, Pageable pageable) {
-        List<Book> allBooks = repository.findAll();
+        if ((title == null || title.trim().isEmpty()) && (author == null || author.trim().isEmpty())) {
+            throw new InvalidRequestException("Хотя бы один параметр поиска (название или автор) должен быть указан");
+        }
 
-        List<Book> filteredBooks = allBooks.stream()
-                .filter(book ->
-                        book.getTitle().toLowerCase().contains(title.toLowerCase()) &&
-                                book.getAuthor().toLowerCase().contains(author.toLowerCase()))
+        List<Book> filteredBooks = bookRepository.findAll().stream()
+                .filter(book -> {
+                    boolean matchesTitle = title == null || title.trim().isEmpty() ||
+                            book.getTitle().toLowerCase().contains(title.toLowerCase());
+                    boolean matchesAuthor = author == null || author.trim().isEmpty() ||
+                            book.getAuthor().toLowerCase().contains(author.toLowerCase());
+                    return matchesTitle && matchesAuthor;
+                })
                 .collect(Collectors.toList());
 
         return createPageFromList(filteredBooks, pageable);
@@ -175,32 +208,32 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<Book> findAllSortedByTitleAsc() {
-        return repository.findAllSortedByTitleAsc();
+        return bookRepository.findAllSortedByTitleAsc();
     }
 
     @Override
     public List<Book> findAllSortedByTitleDesc() {
-        return repository.findAllSortedByTitleDesc();
+        return bookRepository.findAllSortedByTitleDesc();
     }
 
     @Override
     public List<Book> findAllSortedByAuthorAsc() {
-        return repository.findAllSortedByAuthorAsc();
+        return bookRepository.findAllSortedByAuthorAsc();
     }
 
     @Override
     public List<Book> findAllSortedByAuthorDesc() {
-        return repository.findAllSortedByAuthorDesc();
+        return bookRepository.findAllSortedByAuthorDesc();
     }
 
     @Override
     public List<Book> findAllSortedByYearAsc() {
-        return repository.findAllSortedByYearAsc();
+        return bookRepository.findAllSortedByYearAsc();
     }
 
     @Override
     public List<Book> findAllSortedByYearDesc() {
-        return repository.findAllSortedByYearDesc();
+        return bookRepository.findAllSortedByYearDesc();
     }
 
     private Page<Book> createPageFromList(List<Book> list, Pageable pageable) {
@@ -262,5 +295,45 @@ public class BookServiceImpl implements BookService {
         }
 
         return books;
+    }
+
+    private void validateBookForCreation(Book book) {
+        if (book == null) {
+            throw new InvalidRequestException("Данные книги не могут быть null");
+        }
+
+        if (book.getTitle() == null || book.getTitle().trim().isEmpty()) {
+            throw new InvalidRequestException("Название книги обязательно");
+        }
+
+        if (book.getAuthor() == null || book.getAuthor().trim().isEmpty()) {
+            throw new InvalidRequestException("Автор книги обязателен");
+        }
+
+        if (book.getYear() == null) {
+            throw new InvalidRequestException("Год издания обязателен");
+        }
+
+        if (book.getYear() < 0 || book.getYear() > 2100) {
+            throw new InvalidRequestException("Год издания должен быть в диапазоне от 0 до 2100");
+        }
+    }
+
+    private void validateBookForUpdate(Book book) {
+        if (book == null) {
+            throw new InvalidRequestException("Данные для обновления не могут быть null");
+        }
+
+        if (book.getTitle() != null && book.getTitle().trim().isEmpty()) {
+            throw new InvalidRequestException("Название книги не может быть пустым");
+        }
+
+        if (book.getAuthor() != null && book.getAuthor().trim().isEmpty()) {
+            throw new InvalidRequestException("Автор книги не может быть пустым");
+        }
+
+        if (book.getYear() != null && (book.getYear() < 0 || book.getYear() > 2100)) {
+            throw new InvalidRequestException("Год издания должен быть в диапазоне от 0 до 2100");
+        }
     }
 }

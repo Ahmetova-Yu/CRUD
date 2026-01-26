@@ -29,20 +29,27 @@ public class BookController {
 
     @GetMapping("/all")
     public ResponseEntity<String> readBook() {
-        String book = serviceBook.readBook();
-        return new ResponseEntity<>(book, HttpStatus.OK);
+        String books = serviceBook.readBook();
+        return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Integer id, @RequestBody Book book) {
         Book updatedBook = serviceBook.updateBook(id, book);
+        if (updatedBook == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<>(updatedBook, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBook(@PathVariable Integer id) {
-        String deleteBook = serviceBook.deleteBook(id);
-        return new ResponseEntity<>(deleteBook, HttpStatus.OK);
+    public ResponseEntity<Void> deleteBook(@PathVariable Integer id) {
+        try {
+            serviceBook.deleteBook(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping
@@ -51,6 +58,10 @@ public class BookController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "title") String sortBy,
             @RequestParam(defaultValue = "asc") String direction) {
+
+        if (!isValidSortField(sortBy)) {
+            sortBy = "title";
+        }
 
         Sort sort = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
@@ -65,40 +76,40 @@ public class BookController {
 
     @GetMapping("/{id}/with-shelf")
     public ResponseEntity<BookWithShelfDTO> getBookWithShelf(@PathVariable Integer id) {
-        Book book = serviceBook.getBookById(id);
-        BookWithShelfDTO dto = convertToBookWithShelfDTO(book);
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        try {
+            BookWithShelfDTO dto = serviceBook.getBookWithShelf(id);
+            return new ResponseEntity<>(dto, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
-    private BookWithShelfDTO convertToBookWithShelfDTO(Book book) {
-        BookWithShelfDTO dto = new BookWithShelfDTO();
-        dto.setId(book.getId());
-        dto.setTitle(book.getTitle());
-        dto.setAuthor(book.getAuthor());
-        dto.setYear(book.getYear());
-
-        if (book.getShelf() != null) {
-            BookWithShelfDTO.ShelfSimpleDTO shelfDTO = new BookWithShelfDTO.ShelfSimpleDTO();
-            shelfDTO.setId(book.getShelf().getId());
-            shelfDTO.setName(book.getShelf().getName());
-            shelfDTO.setDescription(book.getShelf().getDescription());
-            dto.setShelf(shelfDTO);
+    @GetMapping("/{id}")
+    public ResponseEntity<Book> getBookById(@PathVariable Integer id) {
+        try {
+            Book book = serviceBook.getBookById(id);
+            return new ResponseEntity<>(book, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
-        return dto;
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<Book>> searchBooks(
-            @RequestParam String keyword,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Book> booksPage = serviceBook.getAllBooks(pageable);
+            return new ResponseEntity<>(booksPage.getContent(), HttpStatus.OK);
+        }
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Book> booksPage = serviceBook.searchBooks(keyword, pageable);
 
         List<Book> books = booksPage.getContent();
-
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
@@ -112,7 +123,6 @@ public class BookController {
         Page<Book> booksPage = serviceBook.findByAuthor(author, pageable);
 
         List<Book> books = booksPage.getContent();
-
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
@@ -126,22 +136,29 @@ public class BookController {
         Page<Book> booksPage = serviceBook.findByYear(year, pageable);
 
         List<Book> books = booksPage.getContent();
-
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @GetMapping("/title-author")
     public ResponseEntity<List<Book>> findByTitleAndAuthor(
-            @RequestParam String title,
-            @RequestParam String author,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String author,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+
+        if (title == null && author == null) {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Book> booksPage = serviceBook.getAllBooks(pageable);
+            return new ResponseEntity<>(booksPage.getContent(), HttpStatus.OK);
+        }
+
+        if (title == null) title = "";
+        if (author == null) author = "";
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Book> booksPage = serviceBook.findByTitleAndAuthor(title, author, pageable);
 
         List<Book> books = booksPage.getContent();
-
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
@@ -179,5 +196,12 @@ public class BookController {
     public ResponseEntity<List<Book>> findAllSortedByYearDesc() {
         List<Book> books = serviceBook.findAllSortedByYearDesc();
         return new ResponseEntity<>(books, HttpStatus.OK);
+    }
+
+    private boolean isValidSortField(String field) {
+        return field.equals("id") ||
+                field.equals("title") ||
+                field.equals("author") ||
+                field.equals("year");
     }
 }

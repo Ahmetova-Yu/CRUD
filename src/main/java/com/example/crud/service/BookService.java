@@ -15,7 +15,7 @@ public interface BookService {
 
     Book updateBook(Integer id, Book book);
 
-    String deleteBook(Integer id);
+    void deleteBook(Integer id);
 
     Page<Book> getAllBooks(Pageable pageable);
 

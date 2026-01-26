@@ -18,47 +18,61 @@ public class ShelfController {
     private ShelfService serviceShelf;
 
     @PostMapping
-    ResponseEntity<Shelf> createShelf(@RequestBody Shelf shelf) {
+    public ResponseEntity<Shelf> createShelf(@RequestBody Shelf shelf) {
         Shelf createdShelf = serviceShelf.createShelf(shelf);
         return new ResponseEntity<>(createdShelf, HttpStatus.CREATED);
     }
 
     @GetMapping
-    ResponseEntity<List<Shelf>> readShelf() {
-        List<Shelf> shelf = serviceShelf.readShelf();
-        return new ResponseEntity<>(shelf, HttpStatus.OK);
+    public ResponseEntity<List<Shelf>> readShelf() {
+        List<Shelf> shelves = serviceShelf.readShelf();
+        return new ResponseEntity<>(shelves, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<Shelf> updateShelf(@PathVariable Integer id, @RequestBody Shelf shelf) {
+    public ResponseEntity<Shelf> updateShelf(@PathVariable Integer id, @RequestBody Shelf shelf) {
         Shelf updatedShelf = serviceShelf.updateShelf(id, shelf);
+        if (updatedShelf == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<>(updatedShelf, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{shelfId}")
-    ResponseEntity<String> deleteShelf(@PathVariable Integer shelfId) {
-        String serviceDelete = serviceShelf.deleteShelf(shelfId);
-        return new ResponseEntity<>(serviceDelete, HttpStatus.OK);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteShelf(@PathVariable Integer id) {
+        String result = serviceShelf.deleteShelf(id);
+        if (result.equals("Полка не найдена")) {
+            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @GetMapping("/{id}/books")
-    public ResponseEntity<List<Book>> getBooks(@PathVariable Integer id) {
+    public ResponseEntity<List<Book>> getBooksForShelf(@PathVariable Integer id) {
         List<Book> books = serviceShelf.getBooksForShelf(id);
-
+        if (books == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @DeleteMapping("/books/{bookId}")
     public ResponseEntity<String> removeBookFromShelf(@PathVariable Integer bookId) {
-        String result = serviceShelf.removeBookFromShelfByBookId(bookId);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        ResponseEntity response = serviceShelf.removeBookFromShelfByBookId(bookId);
+        return response;
     }
 
     @PostMapping("/{shelfId}/books/{bookId}")
-    public ResponseEntity<String> addBookToShelf(
+    public ResponseEntity<Void> addBookToShelf(
             @PathVariable Integer shelfId,
             @PathVariable Integer bookId) {
-        String result = serviceShelf.addBookToShelf(shelfId, bookId);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        serviceShelf.addBookToShelf(shelfId, bookId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}/clear")
+    public ResponseEntity<Void> clearShelf(@PathVariable Integer id) {
+        serviceShelf.clearShelf(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

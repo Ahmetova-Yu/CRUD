@@ -2,6 +2,7 @@ package com.example.crud.service;
 
 import com.example.crud.entity.Book;
 import com.example.crud.entity.Shelf;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -17,7 +18,9 @@ public interface ShelfService {
 
     List<Book> getBooksForShelf(Integer id);
 
-    String removeBookFromShelfByBookId(Integer bookId);
+    ResponseEntity removeBookFromShelfByBookId(Integer bookId);
 
-    String addBookToShelf(Integer shelfId, Integer bookId);
+    void addBookToShelf(Integer shelfId, Integer bookId);
+
+    void clearShelf(Integer id);
 }
